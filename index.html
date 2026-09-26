@@ -3,13 +3,75 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#140c1a" />
+
+    <!-- Primary Meta Tags -->
+    <title>Relay — Real-Time Text & Peer-to-Peer File Transfer</title>
+    <meta name="title" content="Relay — Real-Time Text & Peer-to-Peer File Transfer" />
     <meta
       name="description"
-      content="Relay — private rooms for live text and peer-to-peer file transfer. No accounts."
+      content="Instant private rooms for real-time text notepad collaboration and direct peer-to-peer file sharing. No accounts, no data stored on servers."
     />
-    <title>Relay</title>
+    <meta name="keywords" content="relay, real-time communication, p2p, webrtc, file sharing, shared notepad, private rooms, socket.io" />
+    <meta name="author" content="Tayyab" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://relay.thisistayyab.dev/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://relay.thisistayyab.dev/" />
+    <meta property="og:title" content="Relay — Real-Time Text & Peer-to-Peer File Transfer" />
+    <meta
+      property="og:description"
+      content="Instant private rooms for real-time text notepad collaboration and direct peer-to-peer file sharing. No accounts, no data stored on servers."
+    />
+    <meta property="og:image" content="https://relay.thisistayyab.dev/og-image.jpg" />
+    <meta property="og:image:secure_url" content="https://relay.thisistayyab.dev/og-image.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1376" />
+    <meta property="og:image:height" content="768" />
+    <meta property="og:image:alt" content="Relay — Real-Time Text & Peer-to-Peer File Transfer" />
+    <meta property="og:site_name" content="Relay" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://relay.thisistayyab.dev/" />
+    <meta name="twitter:title" content="Relay — Real-Time Text & Peer-to-Peer File Transfer" />
+    <meta
+      name="twitter:description"
+      content="Instant private rooms for real-time text notepad collaboration and direct peer-to-peer file sharing. No accounts, no data stored on servers."
+    />
+    <meta name="twitter:image" content="https://relay.thisistayyab.dev/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Relay — Real-Time Text & Peer-to-Peer File Transfer" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Relay",
+        "url": "https://relay.thisistayyab.dev/",
+        "description": "Instant private rooms for real-time text notepad collaboration and direct peer-to-peer file sharing. No accounts, no data stored on servers.",
+        "applicationCategory": "CommunicationApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires WebSockets and WebRTC support",
+        "image": "https://relay.thisistayyab.dev/og-image.jpg",
+        "author": {
+          "@type": "Person",
+          "name": "Tayyab",
+          "url": "https://thisistayyab.dev"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

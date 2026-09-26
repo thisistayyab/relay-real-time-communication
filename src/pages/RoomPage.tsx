@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Brand } from '../components/Brand.tsx'
 import { useShareRoom } from '../hooks/useShareRoom.ts'
@@ -12,6 +12,30 @@ export function RoomPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
   const room = useShareRoom(roomCode)
+
+  useEffect(() => {
+    document.title = isValidRoomCode(roomCode) ? `Room ${roomCode} — Relay` : 'Invalid Room — Relay'
+    let metaRobots = document.querySelector<HTMLMetaElement>('meta[name="robots"]')
+    const created = !metaRobots
+    if (!metaRobots) {
+      metaRobots = document.createElement('meta')
+      metaRobots.name = 'robots'
+      document.head.appendChild(metaRobots)
+    }
+    const previous = metaRobots.content
+    metaRobots.content = 'noindex, nofollow'
+
+    return () => {
+      document.title = 'Relay — Real-Time Text & Peer-to-Peer File Transfer'
+      if (metaRobots) {
+        if (created) {
+          metaRobots.remove()
+        } else {
+          metaRobots.content = previous
+        }
+      }
+    }
+  }, [roomCode])
 
   if (!isValidRoomCode(roomCode)) {
     return (

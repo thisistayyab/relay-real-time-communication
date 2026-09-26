@@ -1,0 +1,17 @@
+{
+  "name": "Relay — Real-Time Text & P2P Files",
+  "short_name": "Relay",
+  "start_url": "https://relay.thisistayyab.dev/",
+  "scope": "https://relay.thisistayyab.dev/",
+  "display": "standalone",
+  "background_color": "#140c1a",
+  "theme_color": "#140c1a",
+  "description": "Private rooms for real-time text notepad collaboration and direct peer-to-peer file transfer.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

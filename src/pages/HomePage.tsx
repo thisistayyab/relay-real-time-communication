@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Brand } from '../components/Brand.tsx'
 import { generateRoomCode, isValidRoomCode, normalizeRoomCode } from '../lib/room-code.ts'
@@ -7,6 +7,10 @@ export function HomePage() {
   const navigate = useNavigate()
   const [roomCode, setRoomCode] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    document.title = 'Relay — Real-Time Text & Peer-to-Peer File Transfer'
+  }, [])
 
   const joinRoom = (event: FormEvent) => {
     event.preventDefault()

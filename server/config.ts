@@ -38,7 +38,8 @@ export function getHostname(): string {
 
 export function getCorsOrigin(): string | string[] | boolean {
   const raw = process.env.CORS_ORIGIN?.trim()
-  if (!raw) return isDev() ? true : false
   if (raw === '*') return '*'
-  return raw.split(',').map((origin) => origin.trim()).filter(Boolean)
+  if (raw) return raw.split(',').map((origin) => origin.trim()).filter(Boolean)
+  // Default to true (echo origin) so custom domains (relay.thisistayyab.dev) and mobile browsers connect reliably
+  return true
 }
