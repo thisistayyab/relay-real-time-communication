@@ -6,6 +6,8 @@ const CHUNK_SIZE = 16 * 1024
 const BUFFER_HIGH = 8 * 1024 * 1024
 const FILE_ID_LENGTH = 36
 const CHUNK_HEADER = 1 + FILE_ID_LENGTH + 1
+const PEER_RETRY_LIMIT = 3
+const PEER_RETRY_BASE_DELAY_MS = 1_500
 
 type ControlMessage =
   | { type: 'metadata'; metadata: FileMetadata }
@@ -62,17 +64,28 @@ function shouldInitiate(localId: string, remoteId: string): boolean {
 async function waitForBuffer(channel: RTCDataChannel): Promise<void> {
   while (channel.readyState === 'open' && channel.bufferedAmount > BUFFER_HIGH) {
     await new Promise<void>((resolve) => {
-      const onLow = () => {
+      const cleanup = () => {
         channel.removeEventListener('bufferedamountlow', onLow)
+        channel.removeEventListener('close', onClose)
+      }
+      const onLow = () => {
+        cleanup()
+        resolve()
+      }
+      const onClose = () => {
+        cleanup()
         resolve()
       }
       channel.addEventListener('bufferedamountlow', onLow)
+      channel.addEventListener('close', onClose)
     })
   }
 }
 
 export class WebRTCMesh {
   private readonly peers = new Map<string, PeerLink>()
+  private readonly retryAttempts = new Map<string, number>()
+  private readonly retryTimers = new Map<string, ReturnType<typeof setTimeout>>()
   private readonly socket: Socket
   private readonly roomId: string
   private readonly callbacks: MeshCallbacks
@@ -103,6 +116,7 @@ export class WebRTCMesh {
   }
 
   handleUserLeft(peerId: string): void {
+    this.cancelPeerRetry(peerId)
     this.closePeer(peerId)
     this.emitPeerState()
   }
@@ -150,7 +164,12 @@ export class WebRTCMesh {
     }
 
     link.pc.onconnectionstatechange = () => {
-      if (link.pc.connectionState === 'failed' || link.pc.connectionState === 'closed') {
+      const state = link.pc.connectionState
+      if (state === 'connected') {
+        this.retryAttempts.delete(link.id)
+      } else if (state === 'failed') {
+        this.schedulePeerRetry(link.id)
+      } else if (state === 'closed') {
         this.closePeer(link.id)
       }
       this.emitPeerState()
@@ -161,6 +180,40 @@ export class WebRTCMesh {
     }
   }
 
+  /**
+   * ICE gave up on this peer. Tear the link down and rebuild it from scratch
+   * a bounded number of times instead of staying broken until a page reload.
+   * Both sides run this; only the designated initiator re-offers, so the
+   * retries converge without glare.
+   */
+  private schedulePeerRetry(peerId: string): void {
+    if (this.disposed || this.retryTimers.has(peerId)) return
+    const attempts = (this.retryAttempts.get(peerId) ?? 0) + 1
+    if (attempts > PEER_RETRY_LIMIT) {
+      this.closePeer(peerId)
+      this.emitPeerState()
+      return
+    }
+    this.retryAttempts.set(peerId, attempts)
+    this.closePeer(peerId)
+    this.emitPeerState()
+    const timer = setTimeout(() => {
+      this.retryTimers.delete(peerId)
+      if (this.disposed) return
+      void this.ensurePeer(peerId)
+    }, PEER_RETRY_BASE_DELAY_MS * attempts)
+    this.retryTimers.set(peerId, timer)
+  }
+
+  private cancelPeerRetry(peerId: string): void {
+    const timer = this.retryTimers.get(peerId)
+    if (timer) {
+      clearTimeout(timer)
+      this.retryTimers.delete(peerId)
+    }
+    this.retryAttempts.delete(peerId)
+  }
+
   private attachChannel(link: PeerLink, channel: RTCDataChannel): void {
     channel.binaryType = 'arraybuffer'
     channel.bufferedAmountLowThreshold = 1024 * 1024
@@ -169,6 +222,7 @@ export class WebRTCMesh {
       this.handleChannelMessage(event.data)
     }
     channel.onopen = () => {
+      this.retryAttempts.delete(link.id)
       this.emitPeerState()
       this.callbacks.onChannelOpen?.(link.id)
     }
@@ -334,6 +388,7 @@ export class WebRTCMesh {
 
   cleanup(): void {
     this.disposed = true
+    for (const peerId of [...this.retryTimers.keys()]) this.cancelPeerRetry(peerId)
     this.socket.off('webrtc-offer', this.onOffer)
     this.socket.off('webrtc-answer', this.onAnswer)
     this.socket.off('webrtc-ice-candidate', this.onRemoteIce)

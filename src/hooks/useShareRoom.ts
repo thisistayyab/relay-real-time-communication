@@ -53,6 +53,7 @@ export function useShareRoom(roomCode: string) {
     const socket = io({
       transports: ['websocket', 'polling'],
       autoConnect: true,
+      reconnectionDelayMax: 5_000,
     })
     socketRef.current = socket
 
@@ -138,8 +139,8 @@ export function useShareRoom(roomCode: string) {
     })
 
     socket.on('connect_error', () => {
-      setConnectionStatus('Connection error')
-      setError('Could not reach the realtime server.')
+      setConnectionStatus('Reconnecting…')
+      setError('Lost contact with the relay server — retrying. If it just went to sleep, this can take up to a minute.')
     })
 
     socket.on('error-message', ({ message }: { message: string }) => {
